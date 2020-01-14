@@ -8,6 +8,10 @@ typedef struct node
 {
 	struct node *next;
 	int alloc_mem_flag;
+   size_t size; /*size_t is unsigned integer type representing 
+                 * number of bytes*/
+
+         
 	/* where is the buffer
 	 * size?
 	 * how to find the next one
