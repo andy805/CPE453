@@ -15,6 +15,7 @@
 typedef struct node
 {
 	struct node *next;
+	struct node *prev;
 	int alloc_mem_flag;
    size_t size; /*size_t is unsigned integer type representing 
                  * number of bytes*/
@@ -33,3 +34,7 @@ void * malloc(size_t size);
 void free(void *ptr);
 
 void *realloc(void *ptr, size_t size);
+
+int find_size(size_t size);
+
+int num_breaks(size_t size);
