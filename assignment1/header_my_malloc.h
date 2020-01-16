@@ -35,6 +35,6 @@ void free(void *ptr);
 
 void *realloc(void *ptr, size_t size);
 
-int find_size(size_t size);
+node * find_tail(node * head);
 
-int num_breaks(size_t size);
+node * create_node(size_t, void * ptr);
