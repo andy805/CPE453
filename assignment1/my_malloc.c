@@ -33,7 +33,7 @@ node * create_node(size_t size, void * ptr)
 /*insert requires current node
  * assumes that inserted node
  * has enough space to fit */
-node * insert(node * current, node * inserted_node)
+node * insert_node(node * current, node * inserted_node)
 {
 	if(current->alloc_mem_flag == 1)
 	{
@@ -93,15 +93,52 @@ void * malloc(size_t size)
 	int num = num_breaks(size); /* num now tells me how many
 									times i need to call sbreak */
 	int true_size = find_size(size);
+
+	char str4[50]; 
+	snprintf(str4, sizeof(char) * 40, "%s\n", "before outer while loop");    
+	write(1, str4, 40);
 	
 	while(glob_ptr != NULL)
 	{
+		char str5[50]; 
+		snprintf(str5, sizeof(char) * 40, "%s\n", "before inner while loop");    
+		write(2, str5, 40);
 		while(current_node->next != NULL)
 		{
+			char str6[50]; 
+			snprintf(str6, sizeof(char) * 40, "%s\n", "inside inner while loop");    
+			write(1, str6, 40);
 			if(current_node->alloc_mem_flag == 0)
 			{
+				char str7[50]; 
+				snprintf(str7, sizeof(char) * 40, "%s\n", "have found some free space");    
+				write(1, str7, 40);
 				//have found some free space 
+				if(current_node->size < true_size)
+				{
+					/*the free space found is not big enough to allocate to */
+					char str7[50]; 
+					snprintf(str7, sizeof(char) * 40, "%s\n", 
+					"have found some free space not big enough");    
+					write(1, str7, 40);
+				}
+				else
+				{
+					/*the free space found is big enough */
+
+					char str2[50]; 
+					snprintf(str2, sizeof(char) * 40, "%s\n", "free space found and suff");    
+					write(2, str2, 40);
+					intptr_t curr_pos = (intptr_t)current_node;
+					curr_pos = curr_pos + current_node->size;
+					node *new = create_node(true_size, (void *)curr_pos);
+					new = insert_node(current_node, new);
+					intptr_t data_start = (intptr_t)new + sizeof(node);
+					return (void *) data_start;
+					
+				}
 			}
+			current_node = current_node->next;
 			
 		}
 
@@ -109,8 +146,9 @@ void * malloc(size_t size)
 
 		/*only get here after you have reached the end of the list
 		 */
-		
-		if(true_size > current_node->size)
+		void *top_pos = sbrk(0);
+		top_pos = (intptr_t)top_pos;
+		if(true_size > ((int)top_pos - current_node->size))
 		{
 			/*node im trying to add will not fit in current block
 			 *need to call sbreak*/
@@ -119,19 +157,24 @@ void * malloc(size_t size)
 			new->prev = current_node;
 			current_node->next = new;
 			new->alloc_mem_flag = 1;	
-			return (void *) new;
+			intptr_t data_start = (intptr_t)new + sizeof(node);
+			return (void *) data_start;
 		}
 		else
 		{
 			/* node im trying to add will fit in current block
 			 * i need to carve out some space */
+			char str2[50]; 
+			snprintf(str2, sizeof(char) * 40, "%s\n", "end of list carving");    
+			write(2, str2, 40);
 			intptr_t curr_pos = (intptr_t)current_node;
 			curr_pos = curr_pos + current_node->size;
 			node *new = create_node(true_size, (void *)curr_pos);
 			new->prev = current_node;
 			current_node->next = new;
 			new->alloc_mem_flag = 1;	
-			return (void *) new;
+			intptr_t data_start = (intptr_t)new + sizeof(node);
+			return (void *) data_start;
 		}
 		
 		return;
@@ -142,20 +185,22 @@ void * malloc(size_t size)
 
 	/* testing */
 	char str3[50];
-	snprintf(str3, sizeof(char) * 40, "%s\n", "first malloc call");	
+	snprintf(str3, sizeof(char) * 40, "%s\n", "first malloc call ever");	
 	write(1, str3, 35);
 	/*end of testing */
 	void * dummy = sbrk(0);
 	/*careful about sbrk come back to this if having issues*/
-	intptr_t start= (16-((intptr_t)dummy % 16));
+	intptr_t div16= (16-((intptr_t)dummy % 16));
 	void * ptr = sbrk((num * 64000));
-   start = start + (intptr_t)ptr;
-	glob_ptr = (node *)start;
-	glob_ptr->size = size;
+   intptr_t start = div16 + (intptr_t)ptr;
+	glob_ptr = (node *)start; /*glob_ptr is pointing at the beginning of the
+										*the header not data */
+	glob_ptr->size = size - div16;
 	glob_ptr->alloc_mem_flag = 1;
 	glob_ptr->next = NULL;
 	glob_ptr->prev = NULL;
-	return (void *)glob_ptr;
+	start = (intptr_t)glob_ptr + sizeof(node); /*start is pointing at data*/
+	return (void *)(start);
 	
 }
 

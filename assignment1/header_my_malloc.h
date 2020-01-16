@@ -37,4 +37,6 @@ void *realloc(void *ptr, size_t size);
 
 node * find_tail(node * head);
 
-node * create_node(size_t, void * ptr);
+node * create_node(size_t size, void * ptr);
+
+node *insert_node(node * current, node * new);

@@ -6,7 +6,7 @@ all: libmymalloc.a prog clean
 
 
 libmymalloc.a:  my_malloc.o 
-	$(AR) libmymalloc.a my_malloc.o 
+	$(AR) libmymalloc.a my_malloc.o helper.o
 
 prog: test_lib.o libmymalloc.a
 	$(CC) $(CFLAGS) -o prog test_lib.o libmymalloc.a
