@@ -18,7 +18,7 @@ node * create_node(size_t size, void * ptr)
 		char str[100];
 		snprintf(str, sizeof(char) * 60,"%s\n", 
 		"error creating node not divisible 16");	
-		write(2, str, 60);
+		fputs(str, stderr);
 		return;
 		
 	}
@@ -40,7 +40,7 @@ node * insert_node(node * current, node * inserted_node)
 		char str[50];
 		snprintf(str, sizeof(char) * 40,"%s\n",
 					 "error inserted node is not free");	
-		write(2, str, 50);
+		fputs(str, stderr);
 		return;	
 	}	
 
@@ -50,7 +50,7 @@ node * insert_node(node * current, node * inserted_node)
 		char str[100];
 		snprintf(str, sizeof(char) * 70,"%s\n",
 		"error inserted node is bigger than the space available");	
-		write(2, str, 60);
+		fputs(str, stderr);
 		return;
 	}
 
@@ -68,25 +68,25 @@ void * calloc(size_t nmeb, size_t size)
 {
 	char str[50];
 	snprintf(str, sizeof(char) * 40,"%s\n", "using my library for calloc");	
-	write(1, str, 50);
+	fputs(str, stderr);
 	void * ptr;      	
 	return ptr;
 }
 
 void * malloc(size_t size)
 {
+	char str[50];
+	snprintf(str, sizeof(char) * 40, "%s\n", "using my library for malloc");	
+	fputs( str, stderr);
 	node *current_node = glob_ptr;
 	/* writing to stdoutput just to check that my malloc is 
 	is being called */
-	char str[50];
-	snprintf(str, sizeof(char) * 40, "%s\n", "using my library for malloc");	
-	write(1, str, 30);
 	
 	if(size < 1)
 	{
 		char str2[50]; 
 		snprintf(str2, sizeof(char) * 40, "%s\n", "error calling malloc with 0");    
-		write(1, str2, 40);
+		fputs(str2, stderr);
 		return;
 	}
 
@@ -96,23 +96,26 @@ void * malloc(size_t size)
 
 	char str4[50]; 
 	snprintf(str4, sizeof(char) * 40, "%s\n", "before outer while loop");    
-	write(1, str4, 40);
+	fputs(str4, stderr);
 	
 	while(glob_ptr != NULL)
 	{
 		char str5[50]; 
 		snprintf(str5, sizeof(char) * 40, "%s\n", "before inner while loop");    
-		write(2, str5, 40);
+		fputs(str5, stderr);
+
 		while(current_node->next != NULL)
 		{
 			char str6[50]; 
 			snprintf(str6, sizeof(char) * 40, "%s\n", "inside inner while loop");    
-			write(1, str6, 40);
+			fputs(str6, stderr);
+
 			if(current_node->alloc_mem_flag == 0)
 			{
 				char str7[50]; 
 				snprintf(str7, sizeof(char) * 40, "%s\n", "have found some free space");    
-				write(1, str7, 40);
+				fputs(str7, stderr);
+
 				//have found some free space 
 				if(current_node->size < true_size)
 				{
@@ -120,15 +123,18 @@ void * malloc(size_t size)
 					char str7[50]; 
 					snprintf(str7, sizeof(char) * 40, "%s\n", 
 					"have found some free space not big enough");    
-					write(1, str7, 40);
+					fputs(str7, stderr);
+					
 				}
 				else
 				{
-					/*the free space found is big enough */
+					/*the free space found is big enough. time to carve out the  size the user is asking for*/
 
 					char str2[50]; 
 					snprintf(str2, sizeof(char) * 40, "%s\n", "free space found and suff");    
-					write(2, str2, 40);
+					fputs(str2, stderr);
+
+
 					intptr_t curr_pos = (intptr_t)current_node;
 					curr_pos = curr_pos + current_node->size;
 					node *new = create_node(true_size, (void *)curr_pos);
@@ -139,10 +145,7 @@ void * malloc(size_t size)
 				}
 			}
 			current_node = current_node->next;
-			
 		}
-
-
 
 		/*only get here after you have reached the end of the list
 		 */
@@ -153,11 +156,21 @@ void * malloc(size_t size)
 			/*node im trying to add will not fit in current block
 			 *need to call sbreak*/
 			void *ptr = sbrk(num * 64000);
+			current_node->size = true_size;
+			current_node->alloc_mem_flag = 1;
+			intptr_t last_header_pos = (intptr_t)current_node + current_node->size;
+			node *last = (node*)last_header_pos;
+			last->next = NULL;
+			last->prev = current_node;
+			last->size = (int)(((intptr_t) sbrk(0)) -
+last_header_pos);
+			last->alloc_mem_flag = 0;
+		/*	
 			node *new = create_node(true_size, ptr);
 			new->prev = current_node;
 			current_node->next = new;
-			new->alloc_mem_flag = 1;	
-			intptr_t data_start = (intptr_t)new + sizeof(node);
+			new->alloc_mem_flag = 1;	*/
+			intptr_t data_start = (intptr_t)current_node + sizeof(node);
 			return (void *) data_start;
 		}
 		else
@@ -166,7 +179,9 @@ void * malloc(size_t size)
 			 * i need to carve out some space */
 			char str2[50]; 
 			snprintf(str2, sizeof(char) * 40, "%s\n", "end of list carving");    
-			write(2, str2, 40);
+			fputs( str2, stderr);
+			
+
 			intptr_t curr_pos = (intptr_t)current_node;
 			curr_pos = curr_pos + current_node->size;
 			node *new = create_node(true_size, (void *)curr_pos);
@@ -186,19 +201,43 @@ void * malloc(size_t size)
 	/* testing */
 	char str3[50];
 	snprintf(str3, sizeof(char) * 40, "%s\n", "first malloc call ever");	
-	write(1, str3, 35);
+	fputs(str3, stderr);
 	/*end of testing */
-	void * dummy = sbrk(0);
+
+	void * dummy = sbrk(0); /*getting address of the break*/
+
 	/*careful about sbrk come back to this if having issues*/
-	intptr_t div16= (16-((intptr_t)dummy % 16));
-	void * ptr = sbrk((num * 64000));
-   intptr_t start = div16 + (intptr_t)ptr;
-	glob_ptr = (node *)start; /*glob_ptr is pointing at the beginning of the
-										*the header not data */
-	glob_ptr->size = size - div16;
+	intptr_t div16= (16-((intptr_t)dummy % 16)); /* what i need to
+add to first header to make sure its address is divisible by 16*/
+
+	void * ptr = sbrk((num * 64000)); /*getting my memory*/
+
+   intptr_t start = div16 + (intptr_t)ptr; /*start now points to an address that is divisible my 16 */
+
+	glob_ptr = (node *)start; /*glob_ptr is pointing at the beginning of the	*the header not data */
+
+	/*true size = sizeof(node) + size requested*/
+	glob_ptr->size = true_size;
+
+
+	node * dummy_header = (intptr_t)(((intptr_t)glob_ptr+glob_ptr->size));/* this is true_size + a little more from the potential of the first sbrk call not being on an address divisible by 16 */
+	
+	dummy_header->prev = glob_ptr;
+	dummy_header->next = NULL;
+	dummy_header->alloc_mem_flag = 0;
+	intptr_t top_break = (intptr_t)sbrk(0);
+	
+	dummy_header->size = (int)(top_break - (((intptr_t) glob_ptr) +
+glob_ptr->size));
+
 	glob_ptr->alloc_mem_flag = 1;
-	glob_ptr->next = NULL;
+	glob_ptr->next = dummy_header;
 	glob_ptr->prev = NULL;
+
+	char str8[50];
+	snprintf(str8, sizeof(char) * 40, "%s\n", "made it here 1");	
+	fputs(str8, stderr);
+
 	start = (intptr_t)glob_ptr + sizeof(node); /*start is pointing at data*/
 	return (void *)(start);
 	
@@ -208,7 +247,8 @@ void free(void *ptr)
 {
 	char str[50];
 	snprintf(str, sizeof(char) * 40, "%s\n", "using my library for free");	
-	write(1, str, 30);
+	fputs(str, stderr);
+
 	if(ptr == NULL)
 	{
 		exit(0);
@@ -219,6 +259,6 @@ void * realloc(void * ptr, size_t size)
 
 	char str[50];
 	snprintf(str, sizeof(char) * 40, "%s\n", "using my library for realloc");
-	write(1, str, 30);
+	fputs(str, stderr);
 	return ptr;
 }
