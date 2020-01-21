@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <stdint.h>
 
 typedef struct node
 {
@@ -40,3 +41,9 @@ node * find_tail(node * head);
 node * create_node(size_t size, void * ptr);
 
 node *insert_node(node * current, node * new);
+
+int find_size(size_t size);                                                     
+                                                                                
+int num_breaks(size_t size);  
+
+void print_list();
