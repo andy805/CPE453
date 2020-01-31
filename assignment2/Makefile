@@ -9,8 +9,9 @@ intel-all:   liblwp.so
 liblwp.so: lib64 lwp64.o magic64.o
 	$(CC) $(CFLAGS) -shared -o $@ lwp64.o magic64.o
 
-libmylwp.a:  lwp.o magic64.o sems.o
-	$(AR) libmylwp.a lwp.o magic64.o sems.o
+libmylwp.a:  lwp.o magic64.o rr.o rr2.o
+	$(AR) libmylwp.a lwp.o magic64.o rr.o rr2.o
+
 
 prog: main.o  libmylwp.a magic64.o
 	$(CC) $(CFLAGS) -o prog main.o magic64.o libmylwp.a
@@ -27,9 +28,11 @@ lwp64.o : lwp.c lwp.h
 magic64.o: magic64.S
 	$(CC) $(CFLAGS) -o magic64.o -c magic64.S
 
-sems.o: sems.c sems.h
-	$(CC) $(CFLAGS) -o sems.o -c sems.c
+rr.o: rr.c rr.h
+	$(CC) $(CFLAGS) -o rr.o -c rr.c
 
+rr2.o: rr2.c rr.h
+	$(CC) $(CFLAGS) -o rr2.o -c rr2.c
 
 lib64:
 	mkdir lib64

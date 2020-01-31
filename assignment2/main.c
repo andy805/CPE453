@@ -1,65 +1,53 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include "lwp.h"
-#include "sems.h"
-
-#define STACKSIZE   (8192*16)
-#define TIMES 10
-
-int report_ids;
-
-Semaphore ping, pong;
-
-static void ponger(int times)
-{
-  int i;
-  tid_t id = lwp_gettid();
-
-  for(i=0;i<times; i++ ) {
-    down(pong);
-    if ( report_ids )
-      printf("...pong (%ld).\n",id);
-    else
-      printf("...pong.\n");
-    up(ping);
-  }
-}
-static void pinger(int times)
-{
-    printf("pinger\n");
-  int i;
-  tid_t id = lwp_gettid();
-
-  for(i=0;i<times; i++ ) {
-    down(ping);
-    if ( report_ids )
-      printf("   Ping (%ld)", id);
-    else
-      printf("   Ping");
-    up(pong);
-  }
-}
-
-
-int main() {
-  int i;
-
-  srandom(0);                   /* There's random and there's random... */      
-
-  report_ids = (getenv("VERBOSE") != NULL);
-  lwp_set_scheduler(Semaphores);
-  ping = newsem("Ping",1);
-  pong = newsem("Pong",0);
-
-  for(i=0;i<TIMES;i++) {
-    lwp_create((lwpfun)ponger,(void*)2,STACKSIZE);
-    lwp_create((lwpfun)pinger,(void*)2,STACKSIZE);
-  }
-
-  printf("Spawining threads. (%d)\n",rql());
-  lwp_start();
-  printf("Done.\n");
-  exit(0);
-}
-
+#include <stdint.h>                                                             
+#include <stdlib.h>                                                             
+#include <stdio.h>                                                              
+#include <string.h>                                                             
+#include <unistd.h>                                                             
+#include "lwp.h"                                                                
+#include "rr.h"                                                                 
+                                                                                
+#define INITIALSTACK 2048                                                       
+#define ROUNDS 6                                                                
+                                                                                
+typedef void (*sigfun)(int signum);                                             
+static void indentnum(uintptr_t num);                                           
+                                                                                
+int main(int argc, char *argv[]){                                               
+  long i;                                                                       
+                                                                                
+  lwp_set_scheduler(AltRoundRobin);                                             
+  printf("Creating LWPS\n");                                                    
+                                                                                
+  /* spawn a number of individual LWPs */                                       
+  for(i=1;i<=5;i++) {                                                           
+    lwp_create((lwpfun)indentnum,(void*)i,INITIALSTACK);                        
+  }                                                                             
+                                                                                
+  printf("Launching LWPS\n");                                                   
+  lwp_start();                     /* returns when the last lwp exits */        
+                                                                                
+  printf("Back from LWPS.\n");                                                  
+  return 0;                                                                     
+}                                                                               
+                                                                                
+static void indentnum(uintptr_t num) {                                          
+  /* print the number num num times, indented by 5*num spaces                   
+ *
+ * * Not terribly interesting, 
+ * but it is instructive. 
+ * */                                                                           
+  int howfar,i;                                                                 
+                                                                                
+  howfar=(int)num;              /* interpret num as an integer */               
+  for(i=0;i<ROUNDS;i++){                                                        
+    printf("%*d\n",howfar*5,howfar);                                            
+    if ( num == 5 && i == 2 ) { /* end of third round */                        
+      printf("Setting the scheduler.\n");                                       
+      lwp_set_scheduler(AltAltRoundRobin);                                      
+    }                                                                           
+                                                                                
+    lwp_yield();                /* let another have a turn */                   
+  }                                                                             
+  lwp_exit();                   /* bail when done.  This should        
+                                   * be unnecessary if the stack ha    */ 
+}       

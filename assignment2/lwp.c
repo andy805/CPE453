@@ -1,5 +1,5 @@
 /*  Andy Velazquz  
- *  avelaz02
+ *  Caleb Rabbon
  *  Assignment 2
  *  lpw library
  */
@@ -17,7 +17,7 @@ static rfile main_rfile;
 static struct scheduler rr_publish = {NULL, NULL, rr_admit, rr_remove, rr_next};
 scheduler RoundRobin = &rr_publish;
 
-/* scheduler function */
+/*printing function*/
 void print_thread(thread t)
 {
     if(t == NULL)
@@ -28,8 +28,6 @@ void print_thread(thread t)
             t->tid, t->stacksize, t->stack);
     printf("rdi: %lu, rbp: %lu, rsp: %lu\n", t->state.rdi,
             t->state.rbp, t->state.rsp);
-//    printf("next sched id: %lu, next sched loc: %p\n\n",t->sched_one->tid, 
-//            t->sched_one);
     
 }
 void print_scheduler(thread c)
@@ -71,6 +69,7 @@ void print_list()
     }
     printf("\n\n"); 
 }
+/* scheduler function */
 void rr_init(void)
 {
 
@@ -159,11 +158,6 @@ thread rr_next(void)
     thread current = sched_head_ptr;
     thread last = sched_tail_ptr;
     thread next = NULL;
-    /*if next is called, how do we know which thread we are?
- * do we assume we are the head? how do i keep track of
- * current position? if i am the head and i call next
- * what do i do with the current thread? do i put it the 
- * end of the list(scheduler)?  */
 
     if(current && current->sched_one)
     {
@@ -236,7 +230,6 @@ tid_t lwp_create(lwpfun function, void * arguments, size_t size)
     }
     /*admit created thread to scheduler */
     RoundRobin->admit(new);      
-    //print_thread(new);
     return new->tid;
 }
 
@@ -247,8 +240,6 @@ tid_t lwp_gettid(void)
 
 void lwp_yield(void)
 { 
-    //printf("in yield\n");
-    //print_thread(current_process);
     thread next; 
     thread current = current_process;
     if(NULL == (next = RoundRobin->next()))
@@ -258,8 +249,6 @@ void lwp_yield(void)
         
         
     }
-    //printf("in yield after next\n");
-    //print_thread(next);
     
     current_process = next;
     swap_rfiles(&(current->state), &(next->state));
@@ -269,43 +258,25 @@ void really_exit(void )
 {
     thread current = current_process;
     thread dummy = current->sched_one;
-    //printf("\nin exit checkign dummy next\n");
-    //print_thread(dummy);
     
     thread next;
     thread libprev = NULL;
-    //printf("in exit checking current\n");
-    ////print_scheduler(current); 
-    //print_thread(current);
     if(NULL == (next = RoundRobin->next()))
     {
         swap_rfiles(NULL, &main_rfile);
     }
-    //next = RoundRobin->next();
-    //printf("in exit after next\n");
-    //print_thread(next);
-    /*note next and current can be the same if first call*/
-    //print_scheduler(next);
+    if(next->tid == current->tid)
+    {
+        next = dummy;
+    }
     /*lets find current in lib list */
     thread libcurrent = lib_head_ptr;
     while(libcurrent->lib_one != NULL)
     {
-        //printf("in the while \n");
         if(libcurrent->tid == current->tid)
         {
-            //printf("here 0\n");
-            /*i have found my urnning process in liblist */
-            /*need to terminate its context*/
-            if(next->tid == current->tid)
-            {
-                /*when start is first called and lwp create
-                *creates a thread */
-                //printf("in the if\n");
-                next = dummy;
-            }
             if(libprev == NULL)
             {
-                //printf("here\n");
                 /*current lwp is head of liblist */
                 lib_head_ptr = libcurrent->lib_one;
                 current_process = next;
@@ -331,7 +302,6 @@ void really_exit(void )
         libcurrent = libcurrent->lib_one;
         
     }
-    //printf("after the while loop in exit\n");
     /*lib current is the last thread in lib list */
     if(libprev == NULL)
     {
@@ -349,13 +319,6 @@ void really_exit(void )
     {
         /*list have more than one thread in it */
         /*this means that im removing my tail */
-        if(next->tid == current->tid)
-        {
-            /*when start is first called and lwp create
-            *creates a thread */
-            //printf("in the if\n");
-            next = dummy;
-        }
         libprev->lib_one = NULL;
         current_process = next;
         RoundRobin->remove(libcurrent);
@@ -380,8 +343,6 @@ void lwp_start(void)
         current_process = NULL;
         return;
     } 
-    //printf("before the start\n");
-    //print_thread(next);
     current_process = next;
     swap_rfiles(&(main_rfile), &(next->state));
 
@@ -389,8 +350,6 @@ void lwp_start(void)
 
 void lwp_stop(void)
 {
-    //printf("in stop \n");
-    //print_thread(current_process);
     thread dummy = current_process;
     current_process = NULL;
     
@@ -399,40 +358,28 @@ void lwp_stop(void)
 
 void lwp_set_scheduler(scheduler fun)
 {
-    //printf("here\n");
-    
-    //print_scheduler();
+    tid_t seen;
     thread next;
     if(fun == NULL)
     {
         return;
     }
-    //printf("here 2\n");
-    //fun->init();
     scheduler current = RoundRobin;
-    //printf("here 3\n");
-    //print_scheduler();
-    //printf("here 4\n");
     if(fun->init)
     {
         fun->init();
     }
-    //
     while(NULL != (next = current->next()))
-
-        {
-     //   printf("here 5\n");
+    {
+        
         current->remove(next);
         fun->admit(next);
     } 
-    //printf("here 6\n");
-    RoundRobin = fun;
-    if(current->shutdown)
+    if(RoundRobin->shutdown)
     {
-        current->shutdown();
+        RoundRobin->shutdown();
     }
-    //print_scheduler();
-    //RoundRobin = fun;
+    RoundRobin = fun;
     return;
 }
 

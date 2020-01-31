@@ -1,21 +1,23 @@
-To compile the three test programs, be sure to link them with the 
-appropriate libraries:
+Andy Velazquez
+Caleb Rabbon
+Assignment 2
+lwp
 
-  threaded counting:
+We really got stuck trying to figure out what was happening in the last 
+test cases. We failed #24 and #28 , where 24 is where set scheduler
+is used and you transfer all the trheads from old scheduler to new 
+scheduler. From the diff it looks like we call second->next one last time
+as opposed to the reference. we spend alot of time trying to see why it did
+it but we ran out of time. I suspect that we are mishandling out lists
+somewhere but we couldnt figure out where. we also believe that is the reason
+we are also failing the last test case. It says we threw a bogus tid right
+from the start. We either wrote our set scheduler wrong or are mishandling
+the lists somewhere. 
 
-    gcc -o nums numbersmain.c -L. -lPLN -lsnakes
+we included our main and our makefile has extra files we took
+from your directoroy. In specific we took that test number 24
+to try to debug our lwp. 
 
-  hungrysnakes:
-
-    gcc -o hs hungrymain.c -L. -lPLN -lsnakes -lncurses
-
-  randomsnakes:
-
-    gcc -o rs snakemain.c -L. -lPLN -lsnakes -lncurses
-
-Each of the snake programs installs signal handlers such that
-SIGINT (^C) will kill a snake, and SIGQUIT (^\) will terminate
-threading.
-
+As always have mercy
 
 
