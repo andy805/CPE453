@@ -55,11 +55,11 @@ typedef void (*lwpfun)(void *); /* type for lwp function */
 
 /* Tuple that describes a scheduler */
 typedef struct scheduler {
-  void   (*rr_init)(void);            /* initialize any structures     */
-  void   (*rr_shutdown)(void);        /* tear down any structures      */
-  void   (*rr_admit)(thread new);     /* add a thread to the pool      */
-  void   (*rr_remove)(thread victim); /* remove a thread from the pool */
-  thread (*rr_next)(void);            /* select a thread to schedule   */
+  void   (*init)(void);            /* initialize any structures     */
+  void   (*shutdown)(void);        /* tear down any structures      */
+  void   (*admit)(thread new);     /* add a thread to the pool      */
+  void   (*remove)(thread victim); /* remove a thread from the pool */
+  thread (*next)(void);            /* select a thread to schedule   */
 } *scheduler;
 
 /* lwp functions */
@@ -72,6 +72,11 @@ void  lwp_stop(void);
 void  lwp_set_scheduler(scheduler fun);
 scheduler lwp_get_scheduler(void);
 thread tid2thread(tid_t tid);
+void rr_init(void);
+void rr_shutdown(void);
+void rr_admit(thread new);
+thread rr_next(void);
+void rr_remove(thread victim);
 
 /* Macros for stack pointer manipulation:
  *
