@@ -8,6 +8,7 @@
 
 int flagP = 0;
 int argc_counter = 0;
+int flagV = 0;
 
 int main(int argc, char * argv[])
 {
@@ -23,6 +24,7 @@ int main(int argc, char * argv[])
 		{
 			case 'v':
 				printf("v\n");
+                flagV = 1;
 				break;
 			case 'p':
 				printf("p\n");
@@ -42,7 +44,19 @@ int main(int argc, char * argv[])
 		}
 	}
 	
-	
+	if(flagV == 0 && flagP == 0 && argc < 2)
+    {
+        printf("usage: minls [ -v ] [ -p num [ -s num ] ] imagefile [ path ]\n");
+            
+        printf("Options:\n");
+        printf("-p  part    --- select partition for filesystem (default: none)\n");
+        printf("-s  sub     --- select subpartition for filesystem (default: none)\n");
+        printf("-h  help    --- print usage information and exit\n");
+        printf("-v  verbose --- increase verbosity level\n");
+        return 0;
+        
+    }
+
 	for(; optind < argc; optind++)
 	{
 		argc_counter++;
