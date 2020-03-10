@@ -13,6 +13,10 @@ int main(int argc, char * argv[])
 {
 	int opt;
 	char * path = NULL;
+	/*command line parsing 
+	 * "vp:s:" means that v,p,s are options. 
+	 * the : means that the option requires an 	
+     * argument to be present after it */
 	while((opt = getopt(argc, argv, "vp:s:")) != -1)
 	{
 		switch(opt)
