@@ -63,13 +63,18 @@ int main(int argc, char * argv[])
 	for(; optind < argc; optind++)
 	{
 		argc_counter++;
-		printf("left over args: %s\n", argv[optind]);
-		if(argc_counter == 2)
+		//printf("left over args: %s\n", argv[optind]);
+        if(argc_counter == 1)
+        {
+            printf("imagefile: %s\n", argv[optind]);
+        }
+		else if(argc_counter == 2)
 		{
 			path = argv[optind];
+            printf("path: %s\n", path);
 		}
 		
-		if(argc_counter == 3)
+		else if(argc_counter == 3)
 		{
 			printf("too many args extra things\n");
 			return 0;

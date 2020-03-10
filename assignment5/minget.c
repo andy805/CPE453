@@ -44,7 +44,7 @@ int main(int argc, char * argv[])
 				break;	
 		}
 	}
-	
+	/*usage print statment */
 	if(flagV == 0 && flagP == 0 && argc < 2)
     {
         printf("usage: minget [ -v ] [ -p num [ -s num ] ]");
@@ -63,14 +63,20 @@ int main(int argc, char * argv[])
 	for(; optind < argc; optind++)
 	{
 		argc_counter++;
-		printf("left over args: %s\n", argv[optind]);
-		if(argc_counter == 2)
+		//printf("left over args: %s\n", argv[optind]);
+        if(argc_counter == 1)
+        {
+            printf("imagefile: %s\n", argv[optind]);
+        }
+		else if(argc_counter == 2)
 		{
-			srcPath = argv[optind];
+			srcPath = argv[optind]; 
+            printf("srcpath: %s\n", srcPath);
 		}
         else if(argc_counter == 3)
         {
             dstPath = argv[optind];
+            printf("dstpath: %s\n", dstPath);
         }
 		
 		else if(argc_counter == 4)
