@@ -47,11 +47,13 @@ int main(int argc, char * argv[])
 	
 	if(flagV == 0 && flagP == 0 && argc < 2)
     {
-        printf("usage: minls [ -v ] [ -p num [ -s num ] ] imagefile [ path ]\n");
-            
+        printf("usage: minls [ -v ] [ -p num [ -s num ] ]");
+        printf(" imagefile [ path ]\n");
         printf("Options:\n");
-        printf("-p  part    --- select partition for filesystem (default: none)\n");
-        printf("-s  sub     --- select subpartition for filesystem (default: none)\n");
+        printf("-p  part    --- select partition for filesystem");
+        printf(" (default: none)\n");
+        printf("-s  sub     --- select subpartition for filesystem");
+        printf(" (default: none)\n");
         printf("-h  help    --- print usage information and exit\n");
         printf("-v  verbose --- increase verbosity level\n");
         return 0;
